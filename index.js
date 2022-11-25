@@ -21,10 +21,31 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 async function run() {
     try {
         const userCollection = client.db('usedPhones').collection('users')
+        const productCollection = client.db('usedPhones').collection('products')
+
+        // add product database
+        app.post('/products', async (req, res) => {
+            const product = req.body;
+
+
+            const query = { email: product.email }
+            const user = await userCollection.findOne(query);
+            if (user.role === 'Seller') {
+                const result = await productCollection.insertOne(product);
+                return res.send(result)
+            }
+            res.status(401).send({ message: 'unauthorized access' });
+        })
+        // add user database 
         app.post('/users', async (req, res) => {
-            const user = req.body;
-            const result = await userCollection.insertOne(user)
-            res.send(result)
+            const newUser = req.body;
+            const query = { email: newUser.email }
+            const user = await userCollection.findOne(query);
+            if (!user) {
+                const result = await userCollection.insertOne(newUser)
+                return res.send(result)
+            }
+            res.send('already store data')
         })
 
     }
