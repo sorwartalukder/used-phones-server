@@ -22,6 +22,15 @@ async function run() {
     try {
         const userCollection = client.db('usedPhones').collection('users')
         const productCollection = client.db('usedPhones').collection('products')
+        //send category product client
+        app.get('/category/:category', async (req, res) => {
+            const category = req.params.category;
+            console.log(category)
+            const query = { category }
+            const products = await productCollection.find(query).toArray();
+            res.send(products);
+        })
+
         //send my product client
         app.get('/products', async (req, res) => {
             const email = req.query.email;
