@@ -26,7 +26,8 @@ async function run() {
         app.get('/category/:category', async (req, res) => {
             const category = req.params.category;
             const query = { category }
-            const products = await productCollection.find(query).toArray();
+            const allProducts = await productCollection.find(query).toArray();
+            const products = allProducts.filter(product => !product.booked)
             res.send(products);
         })
         // send advertise product database to client
