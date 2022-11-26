@@ -33,7 +33,8 @@ async function run() {
         // send advertise product database to client
         app.get('/products/advertise', async (req, res) => {
             const query = { advertise: true }
-            const advertiseProducts = await productCollection.find(query).toArray();
+            const allAdvertiseProducts = await productCollection.find(query).toArray();
+            const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked)
             res.send(advertiseProducts)
         })
         //add advertise client to database
@@ -76,6 +77,12 @@ async function run() {
             const query = { _id: ObjectId(id) }
             const result = await productCollection.deleteOne(query);
             res.send(result);
+        })
+
+        app.get('/users', async (req, res) => {
+            const query = {};
+            const users = await userCollection.find(query).toArray()
+            res.send(users)
         })
 
         // add user database 
