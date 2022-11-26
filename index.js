@@ -22,7 +22,7 @@ async function run() {
     try {
         const userCollection = client.db('usedPhones').collection('users')
         const productCollection = client.db('usedPhones').collection('products')
-        //send category product client
+        //send category products client
         app.get('/category/:category', async (req, res) => {
             const category = req.params.category;
             console.log(category)
@@ -51,6 +51,13 @@ async function run() {
                 return res.send(result)
             }
             res.status(401).send({ message: 'unauthorized access' });
+        })
+
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await productCollection.deleteOne(query);
+            res.send(result);
         })
 
         // add user database 
