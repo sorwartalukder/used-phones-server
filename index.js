@@ -29,7 +29,13 @@ async function run() {
             const products = await productCollection.find(query).toArray();
             res.send(products);
         })
-
+        // send advertise product database to client
+        app.get('/products/advertise', async (req, res) => {
+            const query = { advertise: true }
+            const advertiseProducts = await productCollection.find(query).toArray();
+            res.send(advertiseProducts)
+        })
+        //add advertise client to database
         app.put('/products/advertise/:id', async (req, res) => {
             const id = req.params.id;
             const advertise = req.body;
