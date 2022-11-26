@@ -25,10 +25,21 @@ async function run() {
         //send category products client
         app.get('/category/:category', async (req, res) => {
             const category = req.params.category;
-            console.log(category)
             const query = { category }
             const products = await productCollection.find(query).toArray();
             res.send(products);
+        })
+
+        app.put('/products/advertise/:id', async (req, res) => {
+            const id = req.params.id;
+            const advertise = req.body;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: advertise
+            }
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result)
         })
 
         //send my product client
@@ -45,14 +56,14 @@ async function run() {
             //call users
             const query = { email: product.email }
             const user = await userCollection.findOne(query);
-
+            //check user 
             if (user.role === 'Seller') {
                 const result = await productCollection.insertOne(product);
                 return res.send(result)
             }
             res.status(401).send({ message: 'unauthorized access' });
         })
-
+        // delete product database
         app.delete('/products/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
