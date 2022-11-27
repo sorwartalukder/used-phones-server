@@ -37,8 +37,18 @@ async function run() {
             const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked)
             res.send(advertiseProducts)
         })
-        //add advertise client to database
-        app.put('/products/advertise/:id', async (req, res) => {
+
+
+        //send reported products client
+        app.get('/reported/products', async (req, res) => {
+            const query = { report: true }
+            const ReportedProducts = await productCollection.find(query).toArray();
+            res.send(ReportedProducts);
+        })
+
+
+        //add advertise /booking/report/client to database
+        app.put('/products/:id', async (req, res) => {
             const id = req.params.id;
             const advertise = req.body;
             const filter = { _id: ObjectId(id) };
