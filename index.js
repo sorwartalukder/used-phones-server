@@ -78,11 +78,25 @@ async function run() {
             const result = await productCollection.deleteOne(query);
             res.send(result);
         })
-
+        //check user role
+        app.get('/user', async (req, res) => {
+            const email = req.query.email;
+            console.log(email)
+            const query = { email };
+            const users = await userCollection.findOne(query)
+            res.send(users)
+        })
+        //send all users
         app.get('/users', async (req, res) => {
             const query = {};
             const users = await userCollection.find(query).toArray()
             res.send(users)
+        })
+        //send all seller
+        app.get('/all-seller', async (req, res) => {
+            const query = { role: 'Seller' };
+            const allSeller = await userCollection.find(query).toArray()
+            res.send(allSeller)
         })
 
         // add user database 
