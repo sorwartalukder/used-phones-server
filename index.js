@@ -98,6 +98,12 @@ async function run() {
             const allSeller = await userCollection.find(query).toArray()
             res.send(allSeller)
         })
+        //send all buyer
+        app.get('/all-buyer', async (req, res) => {
+            const query = { role: 'Buyer' };
+            const allSeller = await userCollection.find(query).toArray()
+            res.send(allSeller)
+        })
 
         // add user database 
         app.post('/users', async (req, res) => {
