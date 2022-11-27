@@ -38,7 +38,6 @@ async function run() {
             res.send(advertiseProducts)
         })
 
-
         //send reported products client
         app.get('/reported/products', async (req, res) => {
             const query = { report: true }
@@ -46,8 +45,18 @@ async function run() {
             res.send(ReportedProducts);
         })
 
-
-        //add advertise /booking/report/client to database
+        //verified user products
+        app.put('/products', async (req, res) => {
+            const email = req.query.email;
+            const verify = req.body;
+            const filter = { email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: verify
+            }
+            const result = await productCollection.updateMany(filter, updatedDoc, options);
+            res.send(result)
+        })
         app.put('/products/:id', async (req, res) => {
             const id = req.params.id;
             const advertise = req.body;
@@ -71,9 +80,17 @@ async function run() {
         // add product database
         app.post('/products', async (req, res) => {
             const product = req.body;
+            console.log(product)
             //call users
             const query = { email: product.email }
             const user = await userCollection.findOne(query);
+            // set user verify status
+            if (user.verify) {
+                product.userVerify = user.verify
+            }
+            else {
+                product.userVerify = false
+            }
             //check user 
             if (user.role === 'Seller') {
                 const result = await productCollection.insertOne(product);
@@ -91,7 +108,6 @@ async function run() {
         //check user role
         app.get('/user', async (req, res) => {
             const email = req.query.email;
-            console.log(email)
             const query = { email };
             const users = await userCollection.findOne(query)
             res.send(users)
@@ -131,7 +147,6 @@ async function run() {
         app.put('/users/:id', async (req, res) => {
             const id = req.params.id;
             const role = req.body;
-            console.log(id, role)
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
             const updatedDoc = {
