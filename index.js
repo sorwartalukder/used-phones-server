@@ -14,17 +14,25 @@ app.use(express.json())
 
 
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.89tmjbq.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.wt5ksu8.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 
 async function run() {
     try {
+        const categoryCollection = client.db('usedPhones').collection('category')
         const userCollection = client.db('usedPhones').collection('users')
         const productCollection = client.db('usedPhones').collection('products')
         const bookingCollection = client.db('usedPhones').collection('booking')
-        //send category products client
+        //send category name client
         app.get('/category/:category', async (req, res) => {
+            const category = req.params.category;
+            const query = { category }
+            const categoryName = await categoryCollection.findOne(query)
+            res.send(categoryName);
+        })
+        //send category products client
+        app.get('/category/products/:category', async (req, res) => {
             const category = req.params.category;
             const query = { category }
             const allProducts = await productCollection.find(query).toArray();
@@ -111,6 +119,12 @@ async function run() {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking)
             res.send(result)
+        })
+        app.get('/my-order/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { buyerEmail: email }
+            const myOrder = await bookingCollection.find(query).toArray()
+            res.send(myOrder)
         })
         //check user role
         app.get('/user', async (req, res) => {
