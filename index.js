@@ -22,6 +22,7 @@ async function run() {
     try {
         const userCollection = client.db('usedPhones').collection('users')
         const productCollection = client.db('usedPhones').collection('products')
+        const bookingCollection = client.db('usedPhones').collection('booking')
         //send category products client
         app.get('/category/:category', async (req, res) => {
             const category = req.params.category;
@@ -104,6 +105,12 @@ async function run() {
             const query = { _id: ObjectId(id) }
             const result = await productCollection.deleteOne(query);
             res.send(result);
+        })
+        //add booking 
+        app.post('/booking', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking)
+            res.send(result)
         })
         //check user role
         app.get('/user', async (req, res) => {
