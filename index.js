@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const jwt = require('jsonwebtoken')
 
 const port = process.env.PORT || 5000;
 
@@ -24,6 +25,17 @@ async function run() {
         const userCollection = client.db('usedPhones').collection('users')
         const productCollection = client.db('usedPhones').collection('products')
         const bookingCollection = client.db('usedPhones').collection('booking')
+        //jwt
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email }
+            const user = await userCollection.findOne(query)
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '3d' })
+                return res.send({ accessToken: token })
+            }
+            res.status(403).send({ accessToken: '' })
+        })
         //send category name client
         app.get('/category/:category', async (req, res) => {
             const category = req.params.category;
