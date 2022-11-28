@@ -36,15 +36,22 @@ async function run() {
             const category = req.params.category;
             const query = { category }
             const allProducts = await productCollection.find(query).toArray();
-            const products = allProducts.filter(product => !product.booked)
+            const products = allProducts.filter(product => !product.booked && product.approved)
             res.send(products);
         })
         // send advertise product database to client
         app.get('/products/advertise', async (req, res) => {
             const query = { advertise: true }
             const allAdvertiseProducts = await productCollection.find(query).toArray();
-            const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked)
+            const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked && product.approved)
             res.send(advertiseProducts)
+        })
+        // send pending product database to client
+        app.get('/products/pending', async (req, res) => {
+            const query = {}
+            const allProducts = await productCollection.find(query).toArray();
+            const pendingProducts = allProducts.filter(product => !product.approved)
+            res.send(pendingProducts)
         })
 
         //send reported products client
@@ -66,6 +73,7 @@ async function run() {
             const result = await productCollection.updateMany(filter, updatedDoc, options);
             res.send(result)
         })
+        // add advertise product client to database
         app.put('/products/:id', async (req, res) => {
             const id = req.params.id;
             const advertise = req.body;
@@ -120,11 +128,12 @@ async function run() {
             const result = await bookingCollection.insertOne(booking)
             res.send(result)
         })
-        app.get('/my-order/:email', async (req, res) => {
+        //send booking my order 
+        app.get('/my-orders/:email', async (req, res) => {
             const email = req.params.email;
             const query = { buyerEmail: email }
-            const myOrder = await bookingCollection.find(query).toArray()
-            res.send(myOrder)
+            const myOrders = await bookingCollection.find(query).toArray()
+            res.send(myOrders)
         })
         //check user role
         app.get('/user', async (req, res) => {
@@ -151,7 +160,6 @@ async function run() {
             const allSeller = await userCollection.find(query).toArray()
             res.send(allSeller)
         })
-
         // add user database 
         app.post('/users', async (req, res) => {
             const newUser = req.body;
