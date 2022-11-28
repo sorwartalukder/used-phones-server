@@ -36,22 +36,15 @@ async function run() {
             const category = req.params.category;
             const query = { category }
             const allProducts = await productCollection.find(query).toArray();
-            const products = allProducts.filter(product => !product.booked && product.approved)
+            const products = allProducts.filter(product => !product.booked)
             res.send(products);
         })
         // send advertise product database to client
         app.get('/products/advertise', async (req, res) => {
             const query = { advertise: true }
             const allAdvertiseProducts = await productCollection.find(query).toArray();
-            const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked && product.approved)
+            const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked)
             res.send(advertiseProducts)
-        })
-        // send pending product database to client
-        app.get('/products/pending', async (req, res) => {
-            const query = {}
-            const allProducts = await productCollection.find(query).toArray();
-            const pendingProducts = allProducts.filter(product => !product.approved)
-            res.send(pendingProducts)
         })
 
         //send reported products client
