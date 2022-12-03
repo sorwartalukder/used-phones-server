@@ -68,7 +68,7 @@ async function run() {
             res.send(products);
         })
         // send advertise product database to client
-        app.get('/products/advertise', verifyJWT, async (req, res) => {
+        app.get('/products/advertise', async (req, res) => {
             const query = { advertise: true }
             const allAdvertiseProducts = await productCollection.find(query).toArray();
             const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked)
@@ -211,7 +211,7 @@ async function run() {
                 const result = await userCollection.insertOne(newUser)
                 return res.send(result)
             }
-            res.send('already store data')
+            res.send({ message: 'already store data' })
         })
         //update user role and user verify
         app.put('/users/:id', async (req, res) => {
