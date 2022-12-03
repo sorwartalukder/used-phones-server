@@ -18,6 +18,22 @@ app.use(express.json())
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.wt5ksu8.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+// jwt 
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+        next()
+    })
+
+}
 
 async function run() {
     try {
@@ -44,7 +60,7 @@ async function run() {
             res.send(categoryName);
         })
         //send category products client
-        app.get('/category/products/:category', async (req, res) => {
+        app.get('/category/products/:category', verifyJWT, async (req, res) => {
             const category = req.params.category;
             const query = { category }
             const allProducts = await productCollection.find(query).toArray();
@@ -52,7 +68,7 @@ async function run() {
             res.send(products);
         })
         // send advertise product database to client
-        app.get('/products/advertise', async (req, res) => {
+        app.get('/products/advertise', verifyJWT, async (req, res) => {
             const query = { advertise: true }
             const allAdvertiseProducts = await productCollection.find(query).toArray();
             const advertiseProducts = allAdvertiseProducts.filter(product => !product.booked)
@@ -60,7 +76,7 @@ async function run() {
         })
 
         //send reported products client
-        app.get('/reported/products', async (req, res) => {
+        app.get('/reported/products', verifyJWT, async (req, res) => {
             const query = { report: true }
             const ReportedProducts = await productCollection.find(query).toArray();
             res.send(ReportedProducts);
@@ -92,8 +108,12 @@ async function run() {
         })
 
         //send my product client
-        app.get('/products', async (req, res) => {
+        app.get('/products', verifyJWT, async (req, res) => {
             const email = req.query.email;
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
             const query = { email: email }
             const products = await productCollection.find(query).toArray();
             res.send(products);
@@ -134,11 +154,27 @@ async function run() {
             res.send(result)
         })
         //send booking my order 
-        app.get('/my-orders/:email', async (req, res) => {
+        app.get('/my-orders/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
             const query = { buyerEmail: email }
             const myOrders = await bookingCollection.find(query).toArray()
             res.send(myOrders)
+        })
+        //send booking my buyer 
+        app.get('/my-buyer/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const decodedEmail = req.decoded.email;
+            if (email !== decodedEmail) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            const query = { sellerEmail: email }
+            const myBuyer = await bookingCollection.find(query).toArray()
+            res.send(myBuyer)
         })
         //check user role
         app.get('/user', async (req, res) => {
@@ -148,19 +184,19 @@ async function run() {
             res.send(users)
         })
         //send all users
-        app.get('/users', async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             const query = {};
             const users = await userCollection.find(query).toArray()
             res.send(users)
         })
         //send all seller
-        app.get('/all-seller', async (req, res) => {
+        app.get('/all-seller', verifyJWT, async (req, res) => {
             const query = { role: 'Seller' };
             const allSeller = await userCollection.find(query).toArray()
             res.send(allSeller)
         })
         //send all buyer
-        app.get('/all-buyer', async (req, res) => {
+        app.get('/all-buyer', verifyJWT, async (req, res) => {
             const query = { role: 'Buyer' };
             const allSeller = await userCollection.find(query).toArray()
             res.send(allSeller)
